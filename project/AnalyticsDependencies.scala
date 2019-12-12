@@ -10,6 +10,7 @@ object AnalyticsDependencies {
     val pureConfig = "0.11.0"
     val scalaTest  = "3.0.5"
     val aws        = "1.11.628"
+    val argonaut   = "6.2.2"
   }
 
   val voxAwsAuth    = "vox" %% "aws-auth"    % Versions.common

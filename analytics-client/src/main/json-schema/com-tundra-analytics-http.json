@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Analytics service model",
+  "properties": {
+    "productRequest": {
+      "$ref": "#/definitions/productRequest"
+    },
+    "productResponse": {
+      "$ref": "#/definitions/productResponse"
+    },
+    "storeRequest": {
+      "$ref": "#/definitions/storeRequest"
+    },
+    "storeResponse": {
+      "$ref": "#/definitions/storeResponse"
+    }
+  },
+  "definitions": {
+    "productRequest": {
+      "id": "#/definitions/productRequest",
+      "type": "object",
+      "properties": {
+        "productId": {
+          "$ref": "com-tundra-analytics-model.json#/definitions/id"
+        },
+        "storeId": {
+          "$ref": "com-tundra-analytics-model.json#/definitions/id"
+        },
+        "size": {
+          "type": "integer"
+        }
+      }
+    },
+    "productResponse": {
+      "id": "#/definitions/productResponse",
+      "type": "object",
+      "properties": {
+        "msg": {
+          "type": "string"
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "$ref": "com-tundra-analytics-model.json#/definitions/id"
+          }
+        }
+      }
+    },
+    "storeRequest": {
+      "id": "#/definitions/storeRequest",
+      "type": "object",
+      "properties": {
+        "storeId": {
+          "$ref": "com-tundra-analytics-model.json#/definitions/id"
+        },
+        "size": {
+          "type": "integer"
+        }
+      }
+    },
+    "storeResponse": {
+      "id": "#/definitions/storeResponse",
+      "type": "object",
+      "properties": {
+        "msg": {
+          "type": "string"
+        },
+        "stores": {
+          "type": "array",
+          "items": {
+            "$ref": "com-tundra-analytics-model.json#/definitions/id"
+          }
+        }
+      }
+    }
+  }
+}

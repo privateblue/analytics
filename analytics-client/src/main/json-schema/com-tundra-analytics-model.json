@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Analytics service model",
+  "properties": {
+    "frequentItems": {
+      "$ref": "#/definitions/frequentItems"
+    },
+    "frequentStores": {
+      "$ref": "#/definitions/frequentStores"
+    }
+  },
+  "definitions": {
+    "id": {
+      "type": "string",
+      "title": "external public identifier"
+    },
+    "frequentItems": {
+      "id": "#/definitions/frequentItems",
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/id"
+        },
+        "productIdStoreId": {
+          "$ref": "#/definitions/id"
+        },
+        "itemOne": {
+          "$ref": "#/definitions/id"
+        },
+        "itemTwo": {
+          "$ref": "#/definitions/id"
+        },
+        "itemThree": {
+          "$ref": "#/definitions/id"
+        },
+        "itemFour": {
+          "$ref": "#/definitions/id"
+        },
+        "itemFive": {
+          "$ref": "#/definitions/id"
+        },
+        "frequency": {
+          "type": "integer"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      }
+    },
+    "frequentStores": {
+      "id": "#/definitions/frequentStores",
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/id"
+        },
+        "storeId": {
+          "$ref": "#/definitions/id"
+        },
+        "storeOne": {
+          "$ref": "#/definitions/id"
+        },
+        "storeTwo": {
+          "$ref": "#/definitions/id"
+        },
+        "storeThree": {
+          "$ref": "#/definitions/id"
+        },
+        "storeFour": {
+          "$ref": "#/definitions/id"
+        },
+        "storeFive": {
+          "$ref": "#/definitions/id"
+        },
+        "frequency": {
+          "type": "integer"
+        },
+        "active": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

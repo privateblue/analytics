@@ -1,0 +1,242 @@
+defaults:
+  working_directory: ~/project
+  docker: &ref_0
+    - image: &buy_docker_image 931175591414.dkr.ecr.eu-west-1.amazonaws.com/circleci-buy:4.0.0
+      aws_auth:
+        aws_access_key_id: $AWS_ACCESS_KEY_ID
+        aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
+  cache_key: &cache_key 'analytics-{{ checksum "analytics-client/build.sbt" }}-{{ checksum "analytics-service/build.sbt" }}-{{ checksum "project/AanalyticsDependencies.scala" }}'
+  slack-name:
+defaultEnvs:
+  SBT_OPTS: >-
+    -Xms512M -Xmx1G -Xss1M -XX:+CMSClassUnloadingEnabled -Duser.timezone=GMT
+  AWS_REGION: eu-west-1
+  AWS_DEFAULT_REGION: eu-west-1
+aliases:
+  &deploy_ready
+  requires:
+    - build
+    - test
+    - test_it
+version: 2.1
+orbs:
+  slack: circleci/slack@3.3.0
+jobs:
+  build:
+    working_directory: ~/project
+    docker: *ref_0
+    steps:
+      - slack/status:
+          fail_only: true
+      - checkout
+      - restore_cache:
+          key: *cache_key
+      - run:
+          name: Configure Nexus Access
+          command: .circleci/nexus.sh
+      - slack/notify:
+          color: good
+          message: "Analytics :dollar: - Building: branch _${CIRCLE_BRANCH}_ version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
+      - setup_remote_docker
+      - run:
+          name: Login to ECR
+          command: >-
+            eval $(aws ecr get-login --region "eu-west-1" --no-include-email --registry-ids "931175591414")
+          environment:
+            SBT_OPTS: >-
+              -Xms512M -Xmx1G -Xss1M -XX:+CMSClassUnloadingEnabled
+              -Duser.timezone=GMT
+            AWS_REGION: eu-west-1
+            AWS_DEFAULT_REGION: eu-west-1
+      - run:
+          name: Building Services
+          command: "sbt analytics-service/docker:publish < /dev/null"
+          no_output_timeout: 20m
+          environment:
+            SBT_OPTS: >-
+              -Xms512M -Xmx1G -Xss1M -XX:+CMSClassUnloadingEnabled
+              -Duser.timezone=GMT
+            AWS_REGION: eu-west-1
+            AWS_DEFAULT_REGION: eu-west-1
+      - save_cache:
+          paths:
+            - ~/.ivy2
+            - ~/.sbt
+            - ~/.npm
+          key: *cache_key
+      - persist_to_workspace:
+          root: .
+          paths: .
+
+  test:
+    working_directory: ~/project
+    docker: *ref_0
+    steps:
+      - slack/status:
+          fail_only: true
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          key: *cache_key
+      - run:
+          name: Configure Nexus Access
+          command: .circleci/nexus.sh
+      - run:
+          name: Testing Fast
+          command: sbt test < /dev/null
+          environment:
+            SBT_OPTS: >-
+              -Xms512M -Xmx1G -Xss1M -XX:+CMSClassUnloadingEnabled
+              -Duser.timezone=GMT
+            AWS_REGION: eu-west-1
+            AWS_DEFAULT_REGION: eu-west-1
+      - store_test_results:
+          path: web/target/test-reports
+
+  test_it:
+    working_directory: ~/project
+    docker:
+      - image: *buy_docker_image
+      - image: postgres:10
+        environment:
+          POSTGRES_USER: tundra
+          POSTGRES_PASSWORD: tundra
+          POSTGRES_DB: analytics_it
+    steps:
+      - slack/status:
+          fail_only: true
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          key: *cache_key
+      - run:
+          name: Configure Nexus Access
+          command: .circleci/nexus.sh
+      - run:
+          name: Integration Testing Analytics Service
+          command: sbt analytics-service/it:test < /dev/null
+          environment:
+            SBT_OPTS: >-
+              -Xms512M -Xmx1G -Xss1M -XX:+CMSClassUnloadingEnabled
+            AWS_REGION: eu-west-1
+            AWS_DEFAULT_REGION: eu-west-1
+      - store_test_results:
+          path: analytics-service/target/test-reports
+
+  dev_deploy:
+    docker: *ref_0
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - restore_cache:
+          key: terraform-providers
+      - slack/notify:
+          color: warning
+          title: ":ship: deploy"
+          message: "Analytics :dollar: - Deploying: *DEV* environment version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
+      - run:
+          name: Deploying Analytics
+          command: .circleci/deploy.sh dev "dev/eu-west-1/dev/services/analytics" $CIRCLE_SHA1
+      - slack/status
+      - save_cache:
+          key: terraform-providers
+          paths:
+            - ~/.terraform.d/plugin-cache
+
+  stage_deploy:
+    docker: *ref_0
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - restore_cache:
+          key: terraform-providers
+      - slack/notify:
+          color: warning
+          title: ":ship: deploy"
+          message: "Analytics :dollar: - Deploying: *STAGE* environment version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
+      - run:
+          name: Deploying Analytics
+          command: .circleci/deploy.sh stage "stage/eu-west-1/stage/services/analytics" $CIRCLE_SHA1
+      - slack/status
+      - save_cache:
+          key: terraform-providers
+          paths:
+            - ~/.terraform.d/plugin-cache
+
+  prod_deploy:
+    docker: *ref_0
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - restore_cache:
+          key: terraform-providers
+      - slack/notify:
+          color: warning
+          title: ":ship: deploy"
+          message: "Analytics :dollar: - Deploying: *STAGE* environment version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
+      - run:
+          name: Deploying Analytics
+          command: .circleci/deploy.sh prod "prod/eu-west-1/prod/services/analytics" $CIRCLE_SHA1
+      - slack/status
+      - save_cache:
+          key: terraform-providers
+          paths:
+            - ~/.terraform.d/plugin-cache
+
+workflows:
+  version: 1
+  build_and_test:
+    jobs:
+      - build:
+          context: security/machine-user
+
+      - test:
+          context: security/machine-user
+          requires:
+            - build
+
+      - test_it:
+          context: security/machine-user
+          requires:
+            - build
+
+      - dev_deploy:
+          context: security/machine-user
+          <<: *deploy_ready
+          filters:
+            branches:
+              only:
+                - dev
+
+      - stage_deploy:
+          context: security/machine-user
+          <<: *deploy_ready
+          filters:
+            branches:
+              only:
+                - master
+
+      - prod_pre_approve_deploy:
+          type: approval
+          <<: *deploy_ready
+          filters:
+            branches:
+              only:
+                - master
+
+      - prod_approve_deploy:
+          type: approval
+          requires:
+            - prod_pre_approve_deploy
+          filters:
+            branches:
+              only:
+                - master
+
+      - prod_deploy:
+          context: security/machine-user
+          requires:
+            - prod_approve_deploy
