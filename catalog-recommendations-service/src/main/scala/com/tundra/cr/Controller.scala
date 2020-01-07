@@ -1,11 +1,11 @@
-package com.tundra.analytics
+package com.tundra.cr
 
 import vox.util.server.web.WebController
 
 import com.twitter.finagle.http._
 
-object Controller extends WebController {
-  val contextPath = "/api/analytics"
+class Controller extends WebController {
+  val contextPath = "/api/catalog-recommendations"
 
   post(s"$contextPath/product") { implicit request: Request =>
     response.noContent

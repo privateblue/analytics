@@ -1,4 +1,4 @@
-import AnalyticsDependencies.Versions
+import CatalogRecommendationsDependencies.Versions
 
 enablePlugins(
   json.schema.codegen.Plugin

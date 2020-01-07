@@ -1,6 +1,6 @@
-package com.tundra.analytics
+package com.tundra.cr
 
-import service.BuildInfo
+import com.tundra.catalog.recommendations.service.BuildInfo
 
 import vox.util.server.VoxServer
 import vox.util.server.common.HasDevelopment
@@ -24,7 +24,7 @@ object Server extends VoxServer with HasDevelopment {
         )
       )
     )
-    router.add[Controller.type]
+    router.add[Controller]
   }
 
 }

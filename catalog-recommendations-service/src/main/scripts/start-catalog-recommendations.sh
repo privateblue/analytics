@@ -2,7 +2,7 @@
 
 export JAVA_OPTS=""
 
-sbt "analytics-service/runMain com.tundra.analytics.Server \
+sbt "catalog-recommendations-service/runMain com.tundra.cr.Server \
 -http.port=:7400 \
 -admin.port=:7402
 "

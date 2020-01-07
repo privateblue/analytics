@@ -1,5 +1,5 @@
 import vox.common.Dependencies.versions
-import AnalyticsDependencies.Versions
+import CatalogRecommendationsDependencies.Versions
 
 enablePlugins(
   VoxPlugin,
@@ -7,7 +7,7 @@ enablePlugins(
   JavaServerAppPackaging
 )
 
-mainClass in Compile := Some("com.tundra.analytics.Server")
+mainClass in Compile := Some("com.tundra.cr.Server")
 
 bashScriptExtraDefines +=
   """

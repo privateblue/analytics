@@ -3,7 +3,7 @@ import sbt._
 /**
   * Put common dependencies for the buy project modules here
   */
-object AnalyticsDependencies {
+object CatalogRecommendationsDependencies {
   object Versions {
     val common     = "10.5.22"
     val logback    = "1.2.3"

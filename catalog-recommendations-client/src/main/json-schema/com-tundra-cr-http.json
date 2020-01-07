@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "title": "Analytics service model",
+  "title": "CatalogRecommendations service model",
   "properties": {
     "productRequest": {
       "$ref": "#/definitions/productRequest"
@@ -22,10 +22,10 @@
       "type": "object",
       "properties": {
         "productId": {
-          "$ref": "com-tundra-analytics-model.json#/definitions/id"
+          "$ref": "com-tundra-cr-model.json#/definitions/id"
         },
         "storeId": {
-          "$ref": "com-tundra-analytics-model.json#/definitions/id"
+          "$ref": "com-tundra-cr-model.json#/definitions/id"
         },
         "size": {
           "type": "integer"
@@ -42,7 +42,7 @@
         "products": {
           "type": "array",
           "items": {
-            "$ref": "com-tundra-analytics-model.json#/definitions/id"
+            "$ref": "com-tundra-cr-model.json#/definitions/id"
           }
         }
       }
@@ -52,7 +52,7 @@
       "type": "object",
       "properties": {
         "storeId": {
-          "$ref": "com-tundra-analytics-model.json#/definitions/id"
+          "$ref": "com-tundra-cr-model.json#/definitions/id"
         },
         "size": {
           "type": "integer"
@@ -69,7 +69,7 @@
         "stores": {
           "type": "array",
           "items": {
-            "$ref": "com-tundra-analytics-model.json#/definitions/id"
+            "$ref": "com-tundra-cr-model.json#/definitions/id"
           }
         }
       }

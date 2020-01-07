@@ -5,7 +5,7 @@ defaults:
       aws_auth:
         aws_access_key_id: $AWS_ACCESS_KEY_ID
         aws_secret_access_key: $AWS_SECRET_ACCESS_KEY
-  cache_key: &cache_key 'analytics-{{ checksum "analytics-client/build.sbt" }}-{{ checksum "analytics-service/build.sbt" }}-{{ checksum "project/AanalyticsDependencies.scala" }}'
+  cache_key: &cache_key 'catalog-recommendations-{{ checksum "catalog-recommendations-client/build.sbt" }}-{{ checksum "catalog-recommendations-service/build.sbt" }}-{{ checksum "project/CatalogRecommendationsDependencies.scala" }}'
   slack-name:
 defaultEnvs:
   SBT_OPTS: >-
@@ -36,7 +36,7 @@ jobs:
           command: .circleci/nexus.sh
       - slack/notify:
           color: good
-          message: "Analytics :dollar: - Building: branch _${CIRCLE_BRANCH}_ version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
+          message: "CatalogRecommendations :dollar: - Building: branch _${CIRCLE_BRANCH}_ version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
       - setup_remote_docker
       - run:
           name: Login to ECR
@@ -50,7 +50,7 @@ jobs:
             AWS_DEFAULT_REGION: eu-west-1
       - run:
           name: Building Services
-          command: "sbt analytics-service/docker:publish < /dev/null"
+          command: "sbt catalog-recommendations-service/docker:publish < /dev/null"
           no_output_timeout: 20m
           environment:
             SBT_OPTS: >-
@@ -101,7 +101,7 @@ jobs:
         environment:
           POSTGRES_USER: tundra
           POSTGRES_PASSWORD: tundra
-          POSTGRES_DB: analytics_it
+          POSTGRES_DB: catalog-recommendations_it
     steps:
       - slack/status:
           fail_only: true
@@ -113,15 +113,15 @@ jobs:
           name: Configure Nexus Access
           command: .circleci/nexus.sh
       - run:
-          name: Integration Testing Analytics Service
-          command: sbt analytics-service/it:test < /dev/null
+          name: Integration Testing CatalogRecommendations Service
+          command: sbt catalog-recommendations-service/it:test < /dev/null
           environment:
             SBT_OPTS: >-
               -Xms512M -Xmx1G -Xss1M -XX:+CMSClassUnloadingEnabled
             AWS_REGION: eu-west-1
             AWS_DEFAULT_REGION: eu-west-1
       - store_test_results:
-          path: analytics-service/target/test-reports
+          path: catalog-recommendations-service/target/test-reports
 
   dev_deploy:
     docker: *ref_0
@@ -134,10 +134,10 @@ jobs:
       - slack/notify:
           color: warning
           title: ":ship: deploy"
-          message: "Analytics :dollar: - Deploying: *DEV* environment version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
+          message: "CatalogRecommendations :dollar: - Deploying: *DEV* environment version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
       - run:
-          name: Deploying Analytics
-          command: .circleci/deploy.sh dev "dev/eu-west-1/dev/services/analytics" $CIRCLE_SHA1
+          name: Deploying CatalogRecommendations
+          command: .circleci/deploy.sh dev "dev/eu-west-1/dev/services/catalog-recommendations" $CIRCLE_SHA1
       - slack/status
       - save_cache:
           key: terraform-providers
@@ -155,10 +155,10 @@ jobs:
       - slack/notify:
           color: warning
           title: ":ship: deploy"
-          message: "Analytics :dollar: - Deploying: *STAGE* environment version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
+          message: "CatalogRecommendations :dollar: - Deploying: *STAGE* environment version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
       - run:
-          name: Deploying Analytics
-          command: .circleci/deploy.sh stage "stage/eu-west-1/stage/services/analytics" $CIRCLE_SHA1
+          name: Deploying CatalogRecommendations
+          command: .circleci/deploy.sh stage "stage/eu-west-1/stage/services/catalog-recommendations" $CIRCLE_SHA1
       - slack/status
       - save_cache:
           key: terraform-providers
@@ -176,10 +176,10 @@ jobs:
       - slack/notify:
           color: warning
           title: ":ship: deploy"
-          message: "Analytics :dollar: - Deploying: *STAGE* environment version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
+          message: "CatalogRecommendations :dollar: - Deploying: *STAGE* environment version _${CIRCLE_SHA1}_ triggered by _${CIRCLE_USERNAME}_"
       - run:
-          name: Deploying Analytics
-          command: .circleci/deploy.sh prod "prod/eu-west-1/prod/services/analytics" $CIRCLE_SHA1
+          name: Deploying CatalogRecommendations
+          command: .circleci/deploy.sh prod "prod/eu-west-1/prod/services/catalog-recommendations" $CIRCLE_SHA1
       - slack/status
       - save_cache:
           key: terraform-providers

@@ -63,15 +63,15 @@ lazy val releaseSettings = Seq(
   releaseVersionFile := file(name.value + "/version.sbt")
 )
 
-lazy val `analytics-client` = project
+lazy val `catalog-recommendations-client` = project
   .settings(commonSettings ++ disableDockerSettings ++ releaseSettings)
 
-lazy val `analytics-service` = project
-  .dependsOn(`analytics-client`)
+lazy val `catalog-recommendations-service` = project
+  .dependsOn(`catalog-recommendations-client`)
   .settings(commonSettings)
 
-// aggregates the analytics
+// aggregates the catalog-recommendations
 lazy val root = project
   .in(file("."))
-  .withId("analytics")
-  .aggregate(`analytics-client`, `analytics-service`)
+  .withId("catalog-recommendations")
+  .aggregate(`catalog-recommendations-client`, `catalog-recommendations-service`)

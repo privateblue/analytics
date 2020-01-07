@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "title": "Analytics service model",
+  "title": "CatalogRecommendations service model",
   "properties": {
     "frequentItems": {
       "$ref": "#/definitions/frequentItems"
