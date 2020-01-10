@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "com-tundra-cr-model.json#/definitions/itemId"
+    },
+    "productIdStoreId": {
+      "$ref": "com-tundra-cr-model.json#/definitions/id"
+    },
+    "itemOne": {
+      "$ref": "com-tundra-cr-model.json#/definitions/id"
+    },
+    "itemTwo": {
+      "$ref": "com-tundra-cr-model.json#/definitions/id"
+    },
+    "itemThree": {
+      "$ref": "com-tundra-cr-model.json#/definitions/id"
+    },
+    "itemFour": {
+      "$ref": "com-tundra-cr-model.json#/definitions/id"
+    },
+    "itemFive": {
+      "$ref": "com-tundra-cr-model.json#/definitions/id"
+    },
+    "frequency": {
+      "type": "integer"
+    },
+    "active": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id", "productIdStoreId", "frequency", "active"
+  ]
+}

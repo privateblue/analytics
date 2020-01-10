@@ -4,11 +4,11 @@ enablePlugins(
   GitVersioning
 )
 
-scalaVersion := "2.12.4"
+scalaVersion := "2.12.7"
 
 val commonSettings =
   Seq(
-    scalaVersion := "2.12.4",
+    scalaVersion := "2.12.7",
     organization := "com.tundra",
     scalacOptions ++= Seq(
       "-encoding",

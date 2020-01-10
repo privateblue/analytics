@@ -1,8 +1,14 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "title": "CatalogRecommendations service model",
+  "title": "Catalog Recommendations service model",
   "properties": {
+    "id": {
+      "$ref": "#/definitions/id"
+    },
+    "itemId": {
+      "$ref": "#/definitions/itemId"
+    },
     "frequentItems": {
       "$ref": "#/definitions/frequentItems"
     },
@@ -15,71 +21,57 @@
       "type": "string",
       "title": "external public identifier"
     },
+    "itemId": {
+      "type": "integer",
+      "title": "internal record id"
+    },
     "frequentItems": {
       "id": "#/definitions/frequentItems",
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "#/definitions/id"
+          "$ref": "#/definitions/itemId"
         },
         "productIdStoreId": {
           "$ref": "#/definitions/id"
         },
-        "itemOne": {
-          "$ref": "#/definitions/id"
-        },
-        "itemTwo": {
-          "$ref": "#/definitions/id"
-        },
-        "itemThree": {
-          "$ref": "#/definitions/id"
-        },
-        "itemFour": {
-          "$ref": "#/definitions/id"
-        },
-        "itemFive": {
-          "$ref": "#/definitions/id"
+        "products": {
+          "type": "array",
+          "items": {
+            "$ref": "com-tundra-cr-model.json#/definitions/id"
+          }
         },
         "frequency": {
           "type": "integer"
-        },
-        "active": {
-          "type": "boolean"
         }
-      }
+      },
+      "required": [
+        "id", "productIdStoreId", "products"
+      ]
     },
     "frequentStores": {
       "id": "#/definitions/frequentStores",
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "#/definitions/id"
+          "$ref": "#/definitions/itemId"
         },
         "storeId": {
           "$ref": "#/definitions/id"
         },
-        "storeOne": {
-          "$ref": "#/definitions/id"
-        },
-        "storeTwo": {
-          "$ref": "#/definitions/id"
-        },
-        "storeThree": {
-          "$ref": "#/definitions/id"
-        },
-        "storeFour": {
-          "$ref": "#/definitions/id"
-        },
-        "storeFive": {
-          "$ref": "#/definitions/id"
+        "stores": {
+          "type": "array",
+          "items": {
+            "$ref": "com-tundra-cr-model.json#/definitions/id"
+          }
         },
         "frequency": {
           "type": "integer"
-        },
-        "active": {
-          "type": "boolean"
         }
-      }
+      },
+      "required": [
+        "id", "storeId", "stores"
+      ]
     }
   }
 }

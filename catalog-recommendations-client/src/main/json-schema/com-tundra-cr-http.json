@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
-  "title": "CatalogRecommendations service model",
+  "title": "Catalog Recommendations protocol",
   "properties": {
     "productRequest": {
       "$ref": "#/definitions/productRequest"
@@ -30,7 +30,8 @@
         "size": {
           "type": "integer"
         }
-      }
+      },
+      "required": ["productId", "storeId", "size"]
     },
     "productResponse": {
       "id": "#/definitions/productResponse",
@@ -44,8 +45,12 @@
           "items": {
             "$ref": "com-tundra-cr-model.json#/definitions/id"
           }
+        },
+        "frequency": {
+          "type": "integer"
         }
-      }
+      },
+      "required": ["products"]
     },
     "storeRequest": {
       "id": "#/definitions/storeRequest",
@@ -57,7 +62,8 @@
         "size": {
           "type": "integer"
         }
-      }
+      },
+      "required": ["storeId", "size"]
     },
     "storeResponse": {
       "id": "#/definitions/storeResponse",
@@ -71,8 +77,12 @@
           "items": {
             "$ref": "com-tundra-cr-model.json#/definitions/id"
           }
+        },
+        "frequency": {
+          "type": "integer"
         }
-      }
+      },
+      "required": ["stores"]
     }
   }
 }

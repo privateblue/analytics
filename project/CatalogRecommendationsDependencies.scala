@@ -5,7 +5,7 @@ import sbt._
   */
 object CatalogRecommendationsDependencies {
   object Versions {
-    val common     = "10.5.22"
+    val common     = "11.2.2"
     val logback    = "1.2.3"
     val pureConfig = "0.11.0"
     val scalaTest  = "3.0.5"
@@ -17,4 +17,5 @@ object CatalogRecommendationsDependencies {
   val voxAwsDynamo  = "vox" %% "aws-dynamo"  % Versions.common
   val voxAwsScala   = "vox" %% "aws-scala"   % Versions.common
   val voxUtilServer = "vox" %% "util-server" % Versions.common
+  val voxApi        = "vox" %% "api"         % Versions.common
 }
