@@ -18,17 +18,55 @@ import javax.inject.Inject
 
 trait FrequentStoresRepository extends vox.api.repo.Repository {
   def getFrequentStores(storeId: Id, size: Long): Future[Option[FrequentStores]]
-  def getFrequentStoresAll(storeId: Id): Future[Option[FrequentStores]]
+  def getFrequentStoresUnion(storeId: Id): Future[Option[FrequentStores]]
+}
+
+object FrequentStoresTable {
+
+  object Attributes {
+    val hashKey = "id"
+    val storeId = "storeId"
+    val active  = "active"
+  }
+
+  object Indexes {
+    val storeactive = "storeactive"
+  }
+
+  val tableRequest: CreateTableRequest =
+    new CreateTableRequest()
+      .withProvisionedThroughput(Schema.provisionedThroughput(2L, 2L))
+      .withAttributeDefinitions(
+        Schema.numberAttribute(Attributes.hashKey),
+        Schema.stringAttribute(Attributes.storeId)
+      )
+      .withKeySchema(
+        Schema.hashKey(Attributes.hashKey)
+      )
+      .withGlobalSecondaryIndexes(
+        new GlobalSecondaryIndex()
+          .withIndexName(Indexes.storeactive)
+          .withProvisionedThroughput(Schema.provisionedThroughput(2L, 2L))
+          .withProjection(
+            new Projection()
+              .withProjectionType(ProjectionType.ALL)
+          )
+          .withKeySchema(
+            Schema.hashKey(Attributes.storeId),
+            Schema.rangeKey(Attributes.active)
+          )
+      )
+
 }
 
 class FrequentStoresRepositoryDynamo @Inject()(config: DynamoDBConfig)
     extends RepositoryAWSWrapper[Dmlfrequentstores, ItemId, Unit](
-      FrequentStoresRepositoryDynamo.tableRequest,
+      FrequentStoresTable.tableRequest,
       config
     )
     with FrequentStoresRepository {
 
-  import FrequentStoresRepositoryDynamo._
+  import FrequentStoresTable._
 
   implicit val serializer: EntitySerializer =
     new EntitySerializer(Attributes.hashKey)
@@ -44,7 +82,7 @@ class FrequentStoresRepositoryDynamo @Inject()(config: DynamoDBConfig)
             Attributes.active -> new Condition()
               .withComparisonOperator(ComparisonOperator.EQ)
               .withAttributeValueList(new AttributeValue().withN("1"))
-          ).withIndexName(storeactiveIndexName)
+          ).withIndexName(Indexes.storeactive)
         )
       items = records.map(fromRecord)
     } yield items
@@ -59,7 +97,7 @@ class FrequentStoresRepositoryDynamo @Inject()(config: DynamoDBConfig)
         .headOption
     }
 
-  def getFrequentStoresAll(storeId: Id) =
+  def getFrequentStoresUnion(storeId: Id) =
     for {
       items <- findFrequentStores(storeId)
       union = items.foldLeft(Set.empty[Id])(_ ++ _.stores.toSet).toList
@@ -71,42 +109,6 @@ class FrequentStoresRepositoryDynamo @Inject()(config: DynamoDBConfig)
         frequency = None
       )
     }
-
-}
-
-object FrequentStoresRepositoryDynamo {
-
-  object Attributes {
-    val hashKey = "id"
-    val storeId = "storeId"
-    val active  = "active"
-  }
-
-  val storeactiveIndexName = "storeactive"
-
-  val tableRequest: CreateTableRequest =
-    new CreateTableRequest()
-      .withProvisionedThroughput(Schema.provisionedThroughput(2L, 2L))
-      .withAttributeDefinitions(
-        Schema.numberAttribute(Attributes.hashKey),
-        Schema.stringAttribute(Attributes.storeId)
-      )
-      .withKeySchema(
-        Schema.hashKey(Attributes.hashKey)
-      )
-      .withGlobalSecondaryIndexes(
-        new GlobalSecondaryIndex()
-          .withIndexName(storeactiveIndexName)
-          .withProvisionedThroughput(Schema.provisionedThroughput(2L, 2L))
-          .withProjection(
-            new Projection()
-              .withProjectionType(ProjectionType.ALL)
-          )
-          .withKeySchema(
-            Schema.hashKey(Attributes.storeId),
-            Schema.rangeKey(Attributes.active)
-          )
-      )
 
   def fromRecord(r: Dmlfrequentstores): FrequentStores =
     FrequentStores(

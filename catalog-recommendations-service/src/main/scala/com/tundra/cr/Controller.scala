@@ -31,7 +31,7 @@ class Controller @Inject()(
     val productId = requiredParam("productId").valueOrError
     val storeId   = requiredParam("storeId").valueOrError
     for {
-      item <- frequentItemsRepository.getFrequentItemsAll(productId, storeId)
+      item <- frequentItemsRepository.getFrequentItemsUnion(productId, storeId)
       result = item.map(i => ProductResponse(msg = None, products = i.products, frequency = i.frequency))
     } yield result.map(response.ok.withJson(_)).getOrElse(response.notFound)
   }
@@ -47,7 +47,7 @@ class Controller @Inject()(
   get(s"$contextPath/store/:storeId") { implicit r: Request =>
     val storeId = requiredParam("storeId").valueOrError
     for {
-      item <- frequentStoresRepository.getFrequentStoresAll(storeId)
+      item <- frequentStoresRepository.getFrequentStoresUnion(storeId)
       result = item.map(i => StoreResponse(msg = None, stores = i.stores, frequency = i.frequency))
     } yield result.map(response.ok.withJson(_)).getOrElse(response.notFound)
   }

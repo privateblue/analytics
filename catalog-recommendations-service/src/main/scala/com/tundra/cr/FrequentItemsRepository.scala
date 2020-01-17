@@ -18,63 +18,10 @@ import javax.inject.Inject
 
 trait FrequentItemsRepository extends vox.api.repo.Repository {
   def getFrequentItems(productId: Id, storeId: Id, size: Long): Future[Option[FrequentItems]]
-  def getFrequentItemsAll(productId: Id, storeId: Id): Future[Option[FrequentItems]]
+  def getFrequentItemsUnion(productId: Id, storeId: Id): Future[Option[FrequentItems]]
 }
 
-class FrequentItemsRepositoryDynamo @Inject()(config: DynamoDBConfig)
-    extends RepositoryAWSWrapper[Dmlfrequentitems, ItemId, Unit](
-      FrequentItemsRepositoryDynamo.tableRequest,
-      config
-    )
-    with FrequentItemsRepository {
-
-  import FrequentItemsRepositoryDynamo._
-
-  implicit val serializer: EntitySerializer =
-    new EntitySerializer(Attributes.hashKey)
-
-  implicit val dynamoExecutionContext = executors.dynamoDBExecutionContext
-
-  private def findFrequentItems(productId: Id, storeId: Id): Future[Seq[FrequentItems]] =
-    for {
-      records <- mapper
-        .query[Dmlfrequentitems](
-          mkHashAndRangeKeyQuery[Id](
-            Attributes.productIdStoreId -> s"$productId$psSeparator$storeId",
-            Attributes.active -> new Condition()
-              .withComparisonOperator(ComparisonOperator.EQ)
-              .withAttributeValueList(new AttributeValue().withN("1"))
-          ).withIndexName(prodactiveIndexName)
-        )
-      items = records.map(fromRecord)
-    } yield items
-
-  def getFrequentItems(productId: Id, storeId: Id, size: Long) =
-    for {
-      items <- findFrequentItems(productId, storeId)
-    } yield {
-      items
-        .filter(_.products.size == size)
-        .sortBy(-_.frequency.get) // we can use Option.get becvause we know it's a Some
-        .headOption
-    }
-
-  def getFrequentItemsAll(productId: Id, storeId: Id) =
-    for {
-      items <- findFrequentItems(productId, storeId)
-      union = items.foldLeft(Set.empty[Id])(_ ++ _.products.toSet).toList
-    } yield items.headOption.map { i =>
-      FrequentItems(
-        id = i.id,
-        productIdStoreId = i.productIdStoreId,
-        products = union,
-        frequency = None
-      )
-    }
-
-}
-
-object FrequentItemsRepositoryDynamo {
+object FrequentItemsTable {
 
   object Attributes {
     val hashKey          = "id"
@@ -82,7 +29,9 @@ object FrequentItemsRepositoryDynamo {
     val active           = "active"
   }
 
-  val prodactiveIndexName = "prodactive"
+  object Indexes {
+    val prodactive = "prodactive"
+  }
 
   val tableRequest: CreateTableRequest =
     new CreateTableRequest()
@@ -96,7 +45,7 @@ object FrequentItemsRepositoryDynamo {
       )
       .withGlobalSecondaryIndexes(
         new GlobalSecondaryIndex()
-          .withIndexName(prodactiveIndexName)
+          .withIndexName(Indexes.prodactive)
           .withProvisionedThroughput(Schema.provisionedThroughput(2L, 2L))
           .withProjection(
             new Projection()
@@ -108,9 +57,62 @@ object FrequentItemsRepositoryDynamo {
           )
       )
 
+}
+
+class FrequentItemsRepositoryDynamo @Inject()(config: DynamoDBConfig)
+    extends RepositoryAWSWrapper[Dmlfrequentitems, ItemId, Unit](
+      FrequentItemsTable.tableRequest,
+      config
+    )
+    with FrequentItemsRepository {
+
+  import FrequentItemsTable._
+
+  implicit val serializer: EntitySerializer =
+    new EntitySerializer(Attributes.hashKey)
+
+  implicit val dynamoExecutionContext = executors.dynamoDBExecutionContext
+
+  def queryFrequentItems(productId: Id, storeId: Id): Future[Seq[FrequentItems]] =
+    for {
+      records <- mapper
+        .query[Dmlfrequentitems](
+          mkHashAndRangeKeyQuery[Id](
+            Attributes.productIdStoreId -> s"$productId$psSeparator$storeId",
+            Attributes.active -> new Condition()
+              .withComparisonOperator(ComparisonOperator.EQ)
+              .withAttributeValueList(new AttributeValue().withN("1"))
+          ).withIndexName(Indexes.prodactive)
+        )
+      items = records.map(recordToModel)
+    } yield items
+
+  def getFrequentItems(productId: Id, storeId: Id, size: Long) =
+    for {
+      items <- queryFrequentItems(productId, storeId)
+    } yield {
+      items
+        .filter(_.products.size == size)
+        .sortBy(-_.frequency.get) // we can use Option.get becvause we know it's a Some
+        .headOption
+    }
+
+  def getFrequentItemsUnion(productId: Id, storeId: Id) =
+    for {
+      items <- queryFrequentItems(productId, storeId)
+      union = items.foldLeft(Set.empty[Id])(_ ++ _.products.toSet).toList
+    } yield items.headOption.map { i =>
+      FrequentItems(
+        id = i.id,
+        productIdStoreId = i.productIdStoreId,
+        products = union,
+        frequency = None
+      )
+    }
+
   val psSeparator = '/'
 
-  def fromRecord(r: Dmlfrequentitems): FrequentItems =
+  def recordToModel(r: Dmlfrequentitems): FrequentItems =
     FrequentItems(
       id = r.id,
       productIdStoreId = r.productIdStoreId,
@@ -123,4 +125,5 @@ object FrequentItemsRepositoryDynamo {
       ).flatten,
       frequency = Some(r.frequency)
     )
+
 }
