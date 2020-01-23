@@ -24,7 +24,7 @@ class Controller @Inject()(
     for {
       item <- frequentItemsRepository.getFrequentItems(req.productId, req.storeId, req.size)
       result = item.map(i => ProductResponse(msg = None, products = i.products, frequency = i.frequency))
-    } yield result.map(response.ok.withJson(_)).getOrElse(response.notFound)
+    } yield result.map(response.ok.withJson(_)).getOrElse(response.noContent)
   }
 
   get(s"$contextPath/product/:productId/:storeId") { implicit r: Request =>
@@ -33,7 +33,7 @@ class Controller @Inject()(
     for {
       item <- frequentItemsRepository.getFrequentItemsUnion(productId, storeId)
       result = item.map(i => ProductResponse(msg = None, products = i.products, frequency = i.frequency))
-    } yield result.map(response.ok.withJson(_)).getOrElse(response.notFound)
+    } yield result.map(response.ok.withJson(_)).getOrElse(response.noContent)
   }
 
   post(s"$contextPath/store") { implicit r: Request =>
@@ -41,7 +41,7 @@ class Controller @Inject()(
     for {
       item <- frequentStoresRepository.getFrequentStores(req.storeId, req.size)
       result = item.map(i => StoreResponse(msg = None, stores = i.stores, frequency = i.frequency))
-    } yield result.map(response.ok.withJson(_)).getOrElse(response.notFound)
+    } yield result.map(response.ok.withJson(_)).getOrElse(response.noContent)
   }
 
   get(s"$contextPath/store/:storeId") { implicit r: Request =>
@@ -49,7 +49,7 @@ class Controller @Inject()(
     for {
       item <- frequentStoresRepository.getFrequentStoresUnion(storeId)
       result = item.map(i => StoreResponse(msg = None, stores = i.stores, frequency = i.frequency))
-    } yield result.map(response.ok.withJson(_)).getOrElse(response.notFound)
+    } yield result.map(response.ok.withJson(_)).getOrElse(response.noContent)
   }
 
 }
